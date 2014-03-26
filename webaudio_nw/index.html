@@ -1,0 +1,75 @@
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <base target="_blank" />
+    <title>WebAudio</title>
+
+    <meta name="description" content="An Overview of Web Audio API">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <style type="text/css">
+    </style>
+
+    <script type="text/javascript" src="bower_components/q/q.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="bower_components/backbone/backbone-min.js"></script>
+    <script type="text/javascript" src="audioutils.js"></script>
+    <script type="text/javascript" src="audioparams.js"></script>
+    <script type="text/javascript" src="audioviz.js"></script>
+    <script type="text/javascript">
+
+    </script>
+  </head>
+  <body style="background-color: #002b36">
+  <div id="container" style="width:960; height: 512;"></div>
+
+    <script type="text/javascript">
+    window.onerror = function (e) {
+      if (!console || !console.error) alert(e);
+    }
+    //navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    var   ctx = new (window.AudioContext || window.webkitAudioContext)()
+        , music = loadSound(ctx, "audio/ACDC_-_Back_In_Black-sample.ogg") /*"http://streaming.radionomy.com/Barock-Music") "audio/natura_morta.mp3"*/
+        , source = ctx.createBufferSource()
+        , out = ctx.createGain()
+        , div = $("#container");
+
+    var waveform = new Waveform({
+      width: 960,
+      height: 512
+    });
+
+    var waveformView = new WaveformView({
+      model: waveform
+    });
+
+    waveformView.$el.appendTo(div);
+
+    waveform.setNode(out, ctx);
+
+    music.then( function(m) {
+      source.buffer = m;
+      source.start(0);
+    } );
+    source.connect(out);
+    out.connect(ctx.destination);
+
+    (function loop () {
+      //if (end.isFulfilled()) return;
+      requestAnimationFrame(loop);
+      waveform.update();
+    } ());
+    /*end.then(function () {
+      out.disconnect(ctx.destination);
+      $(div).empty();
+    }).done();*/
+    </script>
+  </body>
+</html>
